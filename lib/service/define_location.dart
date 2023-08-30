@@ -29,7 +29,5 @@ class DefineLocation {
     _locationData = await location.getLocation();
     lon = _locationData.longitude;
     lat = _locationData.latitude;
-
-    print('Lon:$lon\nLat:$lat');
   }
 }

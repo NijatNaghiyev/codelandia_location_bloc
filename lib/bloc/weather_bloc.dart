@@ -9,8 +9,10 @@ part 'weather_event.dart';
 part 'weather_state.dart';
 
 class WeatherBloc extends Bloc<WeatherEvent, WeatherState> {
-  final WeatherRepo weatherRepo;
-  WeatherBloc({required this.weatherRepo}) : super(WeatherInitialState()) {
+  final WeatherRepo _weatherRepo;
+  WeatherBloc({required WeatherRepo weatherRepo})
+      : _weatherRepo = weatherRepo,
+        super(WeatherInitialState()) {
     on<WeatherInitialEvent>(weatherInitialEvent);
     on<WeatherLoadingEvent>(weatherLoadingEvent);
     on<WeatherErrorEvent>(weatherErrorEvent);
@@ -19,11 +21,18 @@ class WeatherBloc extends Bloc<WeatherEvent, WeatherState> {
   Future<FutureOr<void>> weatherInitialEvent(
       WeatherInitialEvent event, Emitter<WeatherState> emit) async {
     emit(WeatherLoadingState());
-    var data = await weatherRepo.fetchData();
-    if (data != null) {
-      emit(WeatherLoadedState(weatherModel: data));
-    } else {
-      emit(WeatherErrorState(errorMessage: '*** Data not found***'));
+    _weatherRepo.lang = event.lang;
+    _weatherRepo.cityName = event.cityName;
+
+    try {
+      var data = await _weatherRepo.fetchData();
+      if (data != null) {
+        emit(WeatherLoadedState(weatherModel: data));
+      } else {
+        emit(WeatherErrorState(errorMessage: '*** Data not found ***'));
+      }
+    } catch (e) {
+      emit(WeatherErrorState(errorMessage: '*** Invalid Name ***'));
     }
   }
 
